@@ -1,4 +1,4 @@
 # AEco
 Aircraft Ecodesign Tool
 
-Based on my Master's Thesis A Life Cycle Approach to Aircraft Ecodesign.
+Developed during my Master's Degree final disseratation, "A Life Cycle Approach for Aircraft Ecodesign".
