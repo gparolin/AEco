@@ -386,7 +386,13 @@ def spearman_correlation(x, y, dim):
 
 class LCIA():
     """Represent LCIA results."""
-    
+    color_map = ('lightcoral','red','indianred','tomato','firebrick',\
+                'darkkhaki', 'yellow', 'gold','darkorange',\
+                'green', 'seagreen', 'darkturquoise','teal','lightseagreen',\
+                'orchid', 'darkviolet','purple')
+
+    palette = sns.cubehelix_palette(18, start=.3, rot=-0.9, gamma=.9, hue=1, dark=0.05, light=0.9)
+
     def __init__(self, LCI=None, CF=None, CTV=None, MP=None, EP=None):
         """Initializes the LCIA object with a LCI and CF."""
         
@@ -542,12 +548,12 @@ class LCIA():
             return cls(MP=mp, EP=ep, LCI=lci, CTV=ctv)
         
     
-    def dist(self, pathway='MP', save=False):
+    def dist(self, pathway='MP', save=False, palette='GnBu'):
         """Plots the distribution of iterations for the pathway's categories."""
         
         fig = plt.figure(figsize=(13, 19), dpi=150)
         sns.despine(left=True)
-        sns.set(style="ticks", palette='GnBu', color_codes=True)
+        sns.set(style="ticks", palette=palette, color_codes=True)
 
         outer = gridspec.GridSpec(6, 3, wspace=0.2, hspace=0.35)
         
@@ -594,7 +600,7 @@ class LCIA():
         plt.show()
         
     
-    def bar(self, pathway='MP', subphase=True, save=False):
+    def bar(self, pathway='MP', subphase=True, save=False, palette='deep'):
         """Plots the percentual contribution of each life cycle phase to the pathway's categories."""
         
         if pathway == 'MP':
@@ -632,7 +638,7 @@ class LCIA():
             ds[cat] = pct
         df = ds.to_dataframe().T
                 
-        sns.set(style="white", palette='deep', color_codes=False)
+        sns.set(style="white", palette=palette, color_codes=False)
         ax = df.plot.bar(stacked= True, figsize=(18,8), width=0.8)
         fig = ax.get_figure();
         fig.set_dpi(150)
