@@ -386,12 +386,6 @@ def spearman_correlation(x, y, dim):
 
 class LCIA():
     """Represent LCIA results."""
-    color_map = ('lightcoral','red','indianred','tomato','firebrick',\
-                'darkkhaki', 'yellow', 'gold','darkorange',\
-                'green', 'seagreen', 'darkturquoise','teal','lightseagreen',\
-                'orchid', 'darkviolet','purple')
-
-    palette = sns.cubehelix_palette(18, start=.3, rot=-0.9, gamma=.9, hue=1, dark=0.05, light=0.9)
 
     def __init__(self, LCI=None, CF=None, CTV=None, MP=None, EP=None):
         """Initializes the LCIA object with a LCI and CF."""
@@ -679,3 +673,20 @@ class LCIA():
                     pdf.savefig(bbox_inches='tight', papertype='A4')
 
                 plt.show()
+    
+    def compare(self, other, pathway='MP'):
+        """Compares two LCA results, yielding a ratio xr.Dataset"""
+
+        self_sum = self.groupby(by='sum',pathway=pathway)
+        other_sum = other.groupby(by='sum',pathway=pathway)
+
+        ratio = self_sum/other_sum
+        if pathway=="EP":
+            ratio = ratio.to_dataset('AOP')
+        elif pathway=="MP":
+            ratio = ratio.to_dataset('Categories')
+
+        ratio.attrs['Numerator'] = self.MP.attrs['Name']
+        ratio.attrs['Denominator'] = other.MP.attrs['Name']
+        
+        return ratio
