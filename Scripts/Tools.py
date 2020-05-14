@@ -161,61 +161,6 @@ def unit_process_dataset(pandas):
     ds = ds.fillna(0)
     return ds
 
-class LCI():
-    """Defines a LCI class based on xr.DataArray."""
-    
-    def __init__(self, name='', substances='', iterations=100):
-        """Initialization with the phases and substances of the LCI."""
-        
-        self.name = name
-        self.substances = substances
-        self.data = None
-        self.build(iterations)
-  
-    def __repr__(self):
-        return f"{self.data}"
-    
-    def __getitem__(self, phase):
-        return self.data[phase]
-    
-    def __setitem__(self, phase, other):
-        self.data[phase] = other
-            
-    def build(self, iterations):
-        """Builds the xr.DataArray for the LCI."""
-        
-        if self.data == None:
-            self.data = xr.Dataset(coords={'Substances': self.substances, 
-                                           'i': np.arange(iterations)},
-                                   attrs={'Name':self.name})
-            self.data.coords['Units'] = self.substances.Units
-            
-        return self.data
-    
-    def substance(self, substance):
-        """Locates the specified substance on the data."""
-        return self.data.loc[{'Substances': substance}]
-    
-    def iteration(self, iteration):
-        """Locates the specified iteration on the data."""
-        
-        return self.data.loc[{'i': iteration}]
-    
-    def find(self, phase, substance, iteration):
-        """Locates the specified substance, phase and iteration on the data."""
-            
-        return self.data[phase].loc[{'Substances': substance, 'i':iteration}]
-    
-    def mean(self, phase):
-        """Returns the mean for all iterations of a certain phase."""
-        
-        return self['Office'].mean('i').load()
-    
-    def median(self, phase):
-        """Returns the median for all iterations of a certain phase."""
-        
-        return self['Office'].median('i').load()
-
 
 def read_CF(database_path):
     """ Reads the excel file containing CFs and returns midpoint and endpoint factors."""
