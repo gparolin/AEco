@@ -32,8 +32,7 @@ Minimum: {self.minimum}
 Expected: {self.expected}
 Maximum: {self.maximum}"""
         return message
-
-        return 
+ 
     def PERT(self):
         """Calculates PERT values for the parameter."""
         
@@ -386,12 +385,6 @@ def spearman_correlation(x, y, dim):
 
 class LCIA():
     """Represent LCIA results."""
-    color_map = ('lightcoral','red','indianred','tomato','firebrick',\
-                'darkkhaki', 'yellow', 'gold','darkorange',\
-                'green', 'seagreen', 'darkturquoise','teal','lightseagreen',\
-                'orchid', 'darkviolet','purple')
-
-    palette = sns.cubehelix_palette(18, start=.3, rot=-0.9, gamma=.9, hue=1, dark=0.05, light=0.9)
 
     def __init__(self, LCI=None, CF=None, CTV=None, MP=None, EP=None):
         """Initializes the LCIA object with a LCI and CF."""
@@ -595,7 +588,7 @@ class LCIA():
             fig.add_subplot(ax)
         
         if save:
-            fig.savefig('.\\results\\' + name + 'dist.pdf', bbox_inches='tight', papertype='A3')    
+            fig.savefig('.\\Outputs\\' + name + 'dist.pdf', bbox_inches='tight', papertype='A3')    
         
         plt.show()
         
@@ -640,7 +633,7 @@ class LCIA():
                 
         sns.set(style="white", palette=palette, color_codes=False)
         ax = df.plot.bar(stacked= True, figsize=(18,8), width=0.8)
-        fig = ax.get_figure();
+        fig = ax.get_figure()
         fig.set_dpi(150)
         ax.axhline(lw=1, color='k')
         plt.title('')
@@ -652,7 +645,7 @@ class LCIA():
         plt.legend(bbox_to_anchor=(1.01, 0), loc=3, borderaxespad=0.2, edgecolor='w', fontsize=11)
         
         if save:
-            fig.savefig('.\\results\\' + name + 'bar.pdf', bbox_inches='tight', papertype='A3')
+            fig.savefig('.\\Outputs\\' + name + 'bar.pdf', bbox_inches='tight', papertype='A3')
             
         plt.show()
         
@@ -661,7 +654,7 @@ class LCIA():
         
         name = self.MP.attrs['Name']
         np.set_printoptions(precision=2)
-        with PdfPages('.\\results\\' + name + '_CTV.pdf') as pdf:
+        with PdfPages('.\\Outputs\\' + name + '_CTV.pdf') as pdf:
             for cat in self.CTV:
                 da = self.CTV[cat].compute()
                 da = da.sortby(da, ascending=False)
@@ -671,7 +664,7 @@ class LCIA():
                 colors = [plt.cm.Spectral(i/float(len(data))) for i in range(len(data))]
 
                 plt.figure(figsize=(13,7), dpi=150)
-                squarify.plot(data, label=labels)
+                squarify.plot(data, label=labels, color=colors)
                 plt.title('CTV: ' + cat)
                 plt.axis('off')
 
@@ -679,3 +672,72 @@ class LCIA():
                     pdf.savefig(bbox_inches='tight', papertype='A4')
 
                 plt.show()
+    
+    def compare(self, other, pathway='MP'):
+        """Compares two LCA results, yielding a ratio xr.Dataset"""
+
+        self_sum = self.groupby(by='sum',pathway=pathway)
+        other_sum = other.groupby(by='sum',pathway=pathway)
+
+        ratio = self_sum/other_sum
+        if pathway == "EP":
+            ratio = ratio.to_dataset('AOP')
+        elif pathway == "MP":
+            ratio = ratio.to_dataset('Categories')
+
+        ratio.attrs['Numerator'] = self.MP.attrs['Name']
+        ratio.attrs['Denominator'] = other.MP.attrs['Name']
+        
+        return ratio
+
+    def dist_compare(self, other, pathway="EP", save=False, palette='GnBu'):
+        """Plots the paired comparison between two LCA results"""
+        
+        if pathway == "MP":
+            nrow = 6
+            size = 19
+
+        elif pathway == "EP":
+            nrow = 1
+            size = 4
+
+        ds = self.compare(other, pathway=pathway)
+        num = ds.attrs['Numerator']
+        den = ds.attrs['Denominator']
+        name = num + '_' + den + '_' + pathway + '_comparison' 
+
+        f, axes = plt.subplots(nrow, 3, figsize=(13, size))
+        sns.set(style="ticks", palette=palette, color_codes=True)
+        axes = axes.ravel()
+
+        i=0
+        for var in ds:
+
+            data = ds[var]
+            median = data.compute().median()
+            sns.distplot(data, kde=True, hist=False, kde_kws={"shade": True}, \
+                        ax=axes[i], color='forestgreen')
+            axes[i].axvline(1, 0, 1, color='k', ls= '-', lw=0.8)
+            axes[i].axvline(median, 0, 1, color='darkgreen', ls= '--')
+            axes[i].set_xticks([0, 0.5, median, 1.5, 2])
+            i += 1
+
+        plt.setp(axes, yticks=[],  xlim=[0,2])
+        plt.tight_layout()
+        f.set_dpi(150)
+
+        if save:
+            f.savefig('.\\Outputs\\' + name + '.pdf', bbox_inches='tight', papertype='A4')
+
+        plt.show()
+
+def comparePercent(ds, threshold=1):
+    """Returns a xr.Dataset with the percentage of iterations where the ratio is below the threshold."""
+    
+    PCT = xr.Dataset()
+    for var in ds:
+        arr = ds[var]
+        PCT[var] = arr[arr<threshold].size/arr.i.size*100
+    PCT.attrs = ds.attrs
+
+    return PCT
