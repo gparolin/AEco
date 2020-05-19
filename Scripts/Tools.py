@@ -28,9 +28,9 @@ class Parameter():
         
     def __repr__(self):
         message = f"""Parameter '{self.name}':
-Minimum: {self.minimum}
-Expected: {self.expected}
-Maximum: {self.maximum}"""
+        Minimum: {self.minimum}
+        Expected: {self.expected}
+        Maximum: {self.maximum}"""
         return message
  
     def PERT(self):
@@ -122,7 +122,6 @@ def read_inputs(input_path, input_sheet):
 
     return inputs
 
-
 def pkm(aircraft_type, p):
     """Calculates pkm (or tkm) for the aircraft."""
     if aircraft_type == "cargo":
@@ -160,7 +159,6 @@ def unit_process_dataset(pandas):
     ds = ds.rename({'unit':'Units'})
     ds = ds.fillna(0)
     return ds
-
 
 def read_CF(database_path):
     """ Reads the excel file containing CFs and returns midpoint and endpoint factors."""
@@ -410,7 +408,13 @@ class LCIA():
         """Calculates the CTV of the parameterset for MP and EP."""
         
         if self.CTV == None:
-            param_arr = parameterset.data.to_array('Parameters').loc[{'Parameters':[*parameterset.parameters]}]
+            og_params = xr.Dataset()
+            for param in [*parameterset.parameters]:
+                try:
+                    og_params[param] = parameterset.data[param]
+                except:
+                    pass
+            param_arr = og_params.to_array('Parameters')
             self.MP_array = self.MP.to_array().sum('variable').to_dataset('Categories')
             self.EP_array = self.EP.to_array().sum('variable').to_dataset('AOP')
             self.array = xr.merge([self.MP_array,self.EP_array])
