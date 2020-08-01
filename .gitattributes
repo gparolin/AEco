@@ -1,0 +1,4 @@
+Composite_outputs filter=lfs diff=lfs merge=lfs -text
+Echo_outputs filter=lfs diff=lfs merge=lfs -text
+Bravo_outputs filter=lfs diff=lfs merge=lfs -text
+Composite_fuel_outputs filter=lfs diff=lfs merge=lfs -text
