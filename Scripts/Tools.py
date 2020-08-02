@@ -631,7 +631,7 @@ class LCIA():
         df = ds.to_dataframe().T
                 
         sns.set(style="white", palette=palette, color_codes=False)
-        ax = df.plot.bar(stacked= True, figsize=(18,8), width=0.8)
+        ax = df.plot.bar(stacked= True, figsize=(18,6), width=0.8)
         fig = ax.get_figure()
         fig.set_dpi(150)
         ax.axhline(lw=1, color='k')
