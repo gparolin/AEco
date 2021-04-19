@@ -4,7 +4,6 @@ import warnings
 import xarray as xr
 import dask.dataframe as dd
 import dask.array as da
-import bottleneck
 
 class LCI():
     """Defines a LCI class based on xr.DataArray."""

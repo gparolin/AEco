@@ -10,7 +10,8 @@ import squarify
 import xarray as xr
 import dask.dataframe as dd
 import dask.array as da
-import bottleneck
+#import bottleneck
+import scipy
 
 
 class Parameter():
@@ -315,8 +316,8 @@ def pearson_correlation_gufunc(x, y):
     return covariance_gufunc(x, y) / (x.std(axis=-1) * y.std(axis=-1))
 
 def spearman_correlation_gufunc(x, y):
-    x_ranks = bottleneck.rankdata(x, axis=-1)
-    y_ranks = bottleneck.rankdata(y, axis=-1)
+    x_ranks = scipy.stats.rankdata(x, axis=-1)
+    y_ranks = scipy.stats.rankdata(y, axis=-1)
     return pearson_correlation_gufunc(x_ranks, y_ranks)
 
 def spearman_correlation(x, y, dim):
@@ -434,8 +435,8 @@ class LCIA():
         """Saves LCIA object to a NetCDF file."""
         
         
-        self.MP.to_netcdf(path, group='MP', mode='w')
-        self.EP.to_netcdf(path, group='EP', mode='a')
+        self.MP.to_netcdf(path, group='MP', mode='w',engine='h5netcdf')
+        self.EP.to_netcdf(path, group='EP', mode='a',engine='h5netcdf')
         
         if LCI:
             self.LCI.data.reset_index("Substances").to_netcdf(path, group='LCI', mode='a')
