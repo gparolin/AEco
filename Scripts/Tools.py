@@ -530,7 +530,7 @@ class LCIA():
 
             ax = plt.Subplot(fig, inner[1])
             ax.axvline(data.mean(), 0, 1, color='darkgreen', ls= '--')
-            sns.distplot(data, kde=False, color='forestgreen', ax=ax)
+            sns.histplot(data, kde=False, color='forestgreen', ax=ax)
             ax.set_yticks([])
             ax.set_xlabel(cat, fontsize=12)
             ax.ticklabel_format(axis='x', style='sci', scilimits=(0,0), useMathText=True)
