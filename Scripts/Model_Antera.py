@@ -111,8 +111,10 @@ class LCI():
         self.data["Materials"] = LCI_material
 
     def factory(self):
-        LCI_E_factory = self.electricity(self.p["E_factory"])
-        LCI_E_factory = LCI_E_factory * self.p["takt"] / 30  # per aircraft
+        LCI_E_factory_alum = self.electricity(self.p["E_aluminum"])
+        LCI_E_factory_comp = self.electricity(self.p["E_composite"])
+        LCI_E_factory_assy = self.electricity(self.p["E_assy"])
+        LCI_E_factory = (LCI_E_factory_alum+LCI_E_factory_comp+LCI_E_factory_assy) * self.p["takt"] / 30  # per aircraft
 
         LCI_water_factory = self.UP["Water"]*self.p["water_factory"] \
                     + self.UP["Wastewater"]*self.p["wastewater_factory"]  # per month
@@ -222,9 +224,6 @@ class LCI():
 
         self.p["cert_ha"] = self.p["test_FH"] * self.p["productivity"] / self.p["FH"]
         self.data["Certification"] = self.data["Flight"] * self.p["cert_ha"]/self.p["ha_fleet"]
-
-        self.p["ferry_ha"] = self.p["ferry_flight"] * self.p["productivity"]
-        self.data["Logistics"] = self.data["Logistics"] + (self.data["Flight"] * self.p["ferry_ha"]/self.p["ha_life"])
 
         return self.data
 
