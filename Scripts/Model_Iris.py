@@ -8,11 +8,10 @@ import dask.array as da
 class LCI():
     """Defines a LCI class based on xr.DataArray."""
     
-    def __init__(self, name, type, iterations, UP, parameters):
+    def __init__(self, name, iterations, UP, parameters):
         """Initialization with the phases and substances of the LCI."""
         
         self.name = name
-        self.type = type
         self.UP = UP
         self.substances = UP.Substances
         self.p = parameters
@@ -72,7 +71,7 @@ class LCI():
         LCI_water_office = LCI_water_office * self.p["devmonths"]  #per development
 
         LCI_office = (LCI_E_office + LCI_water_office)  #per development
-        LCI_office = LCI_office / self.p["ha_fleet"]  #per pkm
+        LCI_office = LCI_office / self.p["ha_fleet"]  #per ha
 
         self.data['Office'] = LCI_office
 
@@ -154,15 +153,11 @@ class LCI():
         self.sustaining()
 
     def flights(self):
-        try:
-            self.p["t_ccd"] = self.p["FH"]*60 - (self.p["t_app"] + self.p["t_to"] + self.p["t_climb"])  # minutes
-        except:
-            self.p["t_ccd"] = self.p['FH']*60 - self.p['ff_lto']
-        
         self.p["fuel_cruise"] = self.p["ff_cruise"] * self.p["t_cruise"]  # kg
         self.p["fuel_takeoff"] = self.p["ff_takeoff"] * self.p["t_takeoff"]  # kg
         self.p["fuel_landing"] = self.p["ff_landing"] * self.p["t_landing"]  # kg
-        self.data["Flight"] = self.UP["Engine"] * (self.p["fuel_cruise"]+self.p["fuel_takeoff"]+self.p["fuel_landing"])/ self.p["ha_flight"]
+        self.p["fuel_total"] = self.p["fuel_cruise"]+self.p["fuel_takeoff"]+self.p["fuel_landing"]
+        self.data["Flight"] = self.UP["Engine"] * self.p["fuel_total"]/ self.p["ha_flight"]
 
 
     def spray(self):
@@ -177,13 +172,8 @@ class LCI():
         self.data['Maintenance'] = LCI_maint
 
     def fuel(self):
-        try:
-            self.p["fuel_lto"] = self.p['ff_lto'] * self.p['t_lto'] * 60
-        except:
-            self.p["fuel_lto"] = self.p['t_app']*60*self.p['ff_app'] + self.p['t_idle']*60*self.p['ff_idle'] \
-                        + self.p['t_to']*60*self.p['ff_to'] + self.p['t_climb']*60*self.p['ff_climb']
             
-        LCI_fuel = (self.UP['Kerosene']*(self.p["fuel_ccd"]+self.p["fuel_lto"]))/ self.p["pkm_flight"]
+        LCI_fuel = self.UP['Kerosene']*self.p["fuel_total"] / self.p["ha_flight"]
         self.data["Fuel"] = LCI_fuel
 
     def ope(self):
@@ -200,13 +190,13 @@ class LCI():
 
         materials = ['Al','steel','Ti','inconel','GFRP','CFRP']
         scenarios = ['ldf', 'incin','recycl']
-        chunks = self.data.chunks['i'][0]
+        #chunks = self.data.chunks['i'][0]
         iterations = self.data.i.size
-        iterations
         UP_eol = self.UP.rename_vars({'Landfill':'ldf','Incineration':'incin','Aluminium':'Al',
                                 'Titanium':'Ti', 'Inconel':'inconel','Steel':'steel'})
-        eol = xr.Dataset({scenario: (['Substances','i'],da.empty((1835,iterations), chunks=(1835,chunks)))
+        eol = xr.Dataset({scenario: (['Substances','i'],da.empty((1835,iterations), chunks="auto"))
                         for scenario in scenarios}, coords=self.data.coords)
+        #chunks=(1835,chunks)
 
         for scenario in scenarios:
             for material in materials:

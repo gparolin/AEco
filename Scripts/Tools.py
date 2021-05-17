@@ -126,7 +126,7 @@ def read_inputs(input_path, input_sheet):
 def func_unit(p):
     """Calculates func_unit for the aircraft."""
 
-    p["ha_flight"] = p["Productivity"] * p["FH"]
+    p["ha_flight"] = p["productivity"] * p["FH"]
     p["ha_year"] = p["ha_flight"] * p["flights_year"]
     p["ha_life"] = p["ha_year"] * p["lifetime"]
     p["ha_fleet"] = p["ha_life"] * p["fleet"]
