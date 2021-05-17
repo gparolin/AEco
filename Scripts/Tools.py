@@ -123,7 +123,7 @@ def read_inputs(input_path, input_sheet):
 
     return inputs
 
-def func_unit(aircraft_type, p):
+def func_unit(p):
     """Calculates func_unit for the aircraft."""
 
     p["ha_flight"] = p["Productivity"] * p["FH"]
@@ -331,7 +331,7 @@ class LCIA():
         self.EP = EP
         self.phases = {'Development': ['Office','Infrastructure','Capital','Prototypes','Certification'],
                        'Manufacturing': ['Materials','Factory','Logistics','Sustaining'],
-                       'Operation': ['LTO','CCD','Maintenance','Airport','Fuel'],
+                       'Operation': ['Flight','Pesticide','Maintenance','Fuel'],
                        'End-of-Life': ['Recycling','Landfill','Incineration']
                       }
         

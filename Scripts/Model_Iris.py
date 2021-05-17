@@ -93,7 +93,7 @@ class LCI():
         
     def materials(self):
 
-        self.p["Al"] = (self.p['p_Al_extr'] * self.p['b2f_Al_extr'] + self.p['p_Al_stamp'] * self.p['p_Al_stamp'])* self.p['OEW']
+        self.p["Al"] = self.p['p_Al'] * self.p['b2f_Al'] * self.p['OEW']
         self.p["steel"] = self.p['p_steel'] * self.p['b2f_steel'] * self.p['OEW']
         self.p["Ti"] = self.p['p_Ti'] * self.p['b2f_Ti'] * self.p['OEW']
         self.p["inconel"] = self.p['p_inconel'] * self.p['b2f_inconel'] * self.p['OEW']
@@ -162,9 +162,7 @@ class LCI():
         self.p["fuel_cruise"] = self.p["ff_cruise"] * self.p["t_cruise"]  # kg
         self.p["fuel_takeoff"] = self.p["ff_takeoff"] * self.p["t_takeoff"]  # kg
         self.p["fuel_landing"] = self.p["ff_landing"] * self.p["t_landing"]  # kg
-        self.data["Cruise"] = self.UP["Engine"] * self.p["fuel_cruise"] / self.p["ha_flight"]
-        self.data["Takeoff"] = self.UP["Engine"] * self.p["fuel_takeoff"] / self.p["ha_flight"]
-        self.data["Landing"] = self.UP["Engine"] * self.p["fuel_landing"] / self.p["ha_flight"]
+        self.data["Flight"] = self.UP["Engine"] * (self.p["fuel_cruise"]+self.p["fuel_takeoff"]+self.p["fuel_landing"])/ self.p["ha_flight"]
 
 
     def spray(self):
@@ -232,8 +230,11 @@ class LCI():
         LCI_prot = (MFG*self.p["prototypes"] + MFG*self.p["ironbirds"]*0.3)/self.p["ha_fleet"]
         self.data["Prototypes"] = LCI_prot
 
-        self.p["cert_flights"] = self.p["test_FH"] / self.p["FH"]
-        self.data["Certification"] = (self.data["Landing"]+self.data["Takeoff"]+self.data["Cruise"])*self.p["cert_flights"]/self.p["ha_fleet"]
+        self.p["cert_ha"] = self.p["test_FH"] * self.p["productivity"] / self.p["FH"]
+        self.data["Certification"] = self.data["Flight"] * self.p["cert_ha"]/self.p["ha_fleet"]
+
+        self.p["ferry_ha"] = self.p["ferry_flight"] * self.p["productivity"]
+        self.data["Logistics"] = self.data["Logistics"] + (self.data["Flight"] * self.p["ferry_ha"]/self.p["ha_life"])
 
         return self.data
 
