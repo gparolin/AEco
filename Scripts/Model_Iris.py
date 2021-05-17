@@ -56,12 +56,12 @@ class LCI():
     def mean(self, phase):
         """Returns the mean for all iterations of a certain phase."""
         
-        return self['Office'].mean('i').load()
+        return self[phase].mean('i').load()
     
     def median(self, phase):
         """Returns the median for all iterations of a certain phase."""
         
-        return self['Office'].median('i').load()
+        return self[phase].median('i').load()
 
     def office(self):
         LCI_E_office = self.electricity(self.p["E_office"])  #per month
@@ -71,27 +71,19 @@ class LCI():
                         + self.UP["Wastewater"] * self.p["wastewater_office"]  #per month
         LCI_water_office = LCI_water_office * self.p["devmonths"]  #per development
 
-        self.p["travel"] = 18470 / 12 * self.p["developers"] * self.p["devmonths"]  #in km
-
-        LCI_travel = self.UP["Car"]*self.p["travel"]*0.1 \
-                    + self.UP["Airplane"]*self.p["travel"]*0.9  #per development
-
-        LCI_paper = self.UP["Paper"]*self.p["developers"]*self.p["paper_use"]  #per year
-        LCI_paper = LCI_paper * self.p["devmonths"] / 12  #per development
-
-        LCI_office = (LCI_E_office + LCI_water_office + LCI_paper + LCI_travel)  #per development
-        LCI_office = LCI_office / self.p["pkm_fleet"]  #per pkm
+        LCI_office = (LCI_E_office + LCI_water_office)  #per development
+        LCI_office = LCI_office / self.p["ha_fleet"]  #per pkm
 
         self.data['Office'] = LCI_office
 
     def infrastructure(self):
-        LCI_construction = (self.UP["Facilities"]*self.p["new_factory"]/2.74e5) / self.p["pkm_fleet"]
+        LCI_construction = (self.UP["Facilities"]*self.p["new_factory"]/2.74e5) / self.p["ha_fleet"]
         self.data["Infrastructure"] = LCI_construction
     
     def capital(self):
         self.p["new_jigs"] = self.p["OEW"] * 500  # 50t of jigs per 100kg of product
         self.UP["Capital"] = self.UP["Steel"] + self.UP["Jigs"]  # material plus transformation
-        LCI_capital = (self.UP["Capital"]*self.p["new_jigs"] + self.UP["Machine"]*self.p["new_machine"])/self.p["pkm_fleet"]
+        LCI_capital = (self.UP["Capital"]*self.p["new_jigs"] + self.UP["Machine"]*self.p["new_machine"])/self.p["ha_fleet"]
         self.data["Capital"] = LCI_capital
 
     def dev(self):
@@ -100,17 +92,13 @@ class LCI():
         self.capital()     
         
     def materials(self):
-        try:
-            reuse = self.p['reuse']
-        except:
-            reuse = 1
 
-        self.p["Al"] = self.p['p_Al'] * self.p['b2f_Al'] * self.p['OEW'] * reuse
-        self.p["steel"] = self.p['p_steel'] * self.p['b2f_steel'] * self.p['OEW'] * reuse
-        self.p["Ti"] = self.p['p_Ti'] * self.p['b2f_Ti'] * self.p['OEW'] * reuse
-        self.p["inconel"] = self.p['p_inconel'] * self.p['b2f_inconel'] * self.p['OEW'] * reuse
-        self.p["GFRP"] = self.p['p_GFRP'] * self.p['b2f_GFRP'] * self.p['OEW'] * reuse
-        self.p["CFRP"] = self.p['p_CFRP'] * self.p['b2f_CFRP'] * self.p['OEW'] * reuse
+        self.p["Al"] = (self.p['p_Al_extr'] * self.p['b2f_Al_extr'] + self.p['p_Al_stamp'] * self.p['p_Al_stamp'])* self.p['OEW']
+        self.p["steel"] = self.p['p_steel'] * self.p['b2f_steel'] * self.p['OEW']
+        self.p["Ti"] = self.p['p_Ti'] * self.p['b2f_Ti'] * self.p['OEW']
+        self.p["inconel"] = self.p['p_inconel'] * self.p['b2f_inconel'] * self.p['OEW']
+        self.p["GFRP"] = self.p['p_GFRP'] * self.p['b2f_GFRP'] * self.p['OEW']
+        self.p["CFRP"] = self.p['p_CFRP'] * self.p['b2f_CFRP'] * self.p['OEW']
 
         LCI_Al = self.UP["Aluminium"] * self.p["Al"]
         LCI_steel = self.UP["Steel"] * self.p["steel"]
@@ -120,7 +108,7 @@ class LCI():
         LCI_CFRP = self.UP["CFRP"] * self.p["CFRP"]
 
         #LCI Material Extraction and Transformation
-        LCI_material = (LCI_Al + LCI_steel + LCI_Ti + LCI_inconel + LCI_GFRP + LCI_CFRP) / self.p["pkm_life"]
+        LCI_material = (LCI_Al + LCI_steel + LCI_Ti + LCI_inconel + LCI_GFRP + LCI_CFRP) / self.p["ha_life"]
         self.data["Materials"] = LCI_material
 
     def factory(self):
@@ -134,12 +122,15 @@ class LCI():
         LCI_lube = self.UP["Lubricant"] * self.p["lubricant"]  # per month
         LCI_lube = LCI_lube * self.p["takt"] / 30  # per aircraft
 
+        LCI_matrix = self.UP["GFRP"] * self.p["consummable"] # per month
+        LCI_matrix = LCI_matrix * self.p["takt"] / 30 #per aircraft
+
         self.p["facilities_maint"] = self.p["OEW"] * 4.58e-10  # use per kg of product
 
         LCI_facilities_maint = self.UP["Facilities"] * self.p["facilities_maint"] * 0.02  # per year
         LCI_facilities_maint = LCI_facilities_maint * self.p["takt"] / 365  # per aircraft
 
-        LCI_factory = (LCI_E_factory + LCI_water_factory + LCI_lube + LCI_facilities_maint)/self.p["pkm_life"]
+        LCI_factory = (LCI_E_factory + LCI_water_factory + LCI_lube + LCI_matrix + LCI_facilities_maint)/self.p["ha_life"]
         self.data["Factory"] = LCI_factory
 
     def logistics(self):
@@ -148,12 +139,12 @@ class LCI():
         air = self.p["d_air"] * self.p["m_air"] #tonne * km
 
         LCI_logistics = (self.UP["Lorry"]*lorry + self.UP["Sea"]*sea \
-                + self.UP["Air"]*air) / self.p["pkm_life"]
+                + self.UP["Air"]*air) / self.p["ha_life"]
         self.data['Logistics'] = LCI_logistics
     
     def sustaining(self):
         LCI_sustaining = self.data["Office"] * 0.01 / 30 #per day
-        LCI_sustaining = (LCI_sustaining * self.p["takt"])/self.p["pkm_life"]
+        LCI_sustaining = (LCI_sustaining * self.p["takt"])/self.p["ha_life"]
         self.data["Sustaining"] = LCI_sustaining
         
     def mfg(self):
@@ -168,30 +159,24 @@ class LCI():
         except:
             self.p["t_ccd"] = self.p['FH']*60 - self.p['ff_lto']
         
-        self.p["fuel_ccd"] = self.p["ff_ccd"] * self.p["t_ccd"] * 60  # kg
-        self.data["LTO"] = self.UP["LTO"] / self.p["pkm_flight"]
-        self.data["CCD"] = self.UP["CCD"] * self.p["fuel_ccd"] / self.p["pkm_flight"]
+        self.p["fuel_cruise"] = self.p["ff_cruise"] * self.p["t_cruise"]  # kg
+        self.p["fuel_takeoff"] = self.p["ff_takeoff"] * self.p["t_takeoff"]  # kg
+        self.p["fuel_landing"] = self.p["ff_landing"] * self.p["t_landing"]  # kg
+        self.data["Cruise"] = self.UP["Engine"] * self.p["fuel_cruise"] / self.p["ha_flight"]
+        self.data["Takeoff"] = self.UP["Engine"] * self.p["fuel_takeoff"] / self.p["ha_flight"]
+        self.data["Landing"] = self.UP["Engine"] * self.p["fuel_landing"] / self.p["ha_flight"]
+
+
+    def spray(self):
+        self.data["Pesticide"] = (self.p["pesticide_use"] / self.p["pesticide_eff"]) * self.UP["Pesticide"] #kg/ha
+
 
     def maintenance(self):
         LCI_maint = self.UP["Aluminium"]*self.p["maint_Al"] + self.UP["Steel"]*self.p["maint_steel"] \
             + self.UP["Polymer"]*self.p["maint_pol"] + self.UP["Battery"]*self.p['maint_battery'] #por ano
 
-        LCI_maint = (LCI_maint / self.p["flights_year"]) / self.p["pkm_flight"]
+        LCI_maint = (LCI_maint / self.p["flights_year"]) / self.p["ha_flight"]
         self.data['Maintenance'] = LCI_maint
-
-    def airport(self):
-        if self.type == "cargo":
-            ap_impact = 0.132  # 13,2% of airport impacts are due to cargo
-        elif self.type == "pax":
-            ap_impact = 0.868
-        else:
-            ap_impact = 1
-
-        self.p["f_pax_ap"] = self.p["pax_ap"] / 22500000  # fraction of pax relative to zurich in 2000
-        LCI_ap = self.UP["Airport"] * self.p["f_pax_ap"]/100 / self.p["flights_ap"]  # 100 life years for building
-        LCI_ap = LCI_ap * ap_impact / self.p["pkm_flight"]
-
-        self.data["Airport"] = LCI_ap
 
     def fuel(self):
         try:
@@ -205,18 +190,14 @@ class LCI():
 
     def ope(self):
         self.flights()
+        self.spray()
         self.maintenance()
-        self.airport()
         self.fuel()
 
     def eol(self):
-        try:
-            reuse_factor = (2 - p['reuse'])
-        except:
-            reuse_factor = 1
     
         E_sort_constant = 0.4645 / 3.6  # kWh/kg of material, on average
-        self.p["E_sort"] = E_sort_constant * self.p['OEW'] * reuse_factor
+        self.p["E_sort"] = E_sort_constant * self.p['OEW']
         LCI_sort = self.electricity(self.p["E_sort"])
 
         materials = ['Al','steel','Ti','inconel','GFRP','CFRP']
@@ -231,15 +212,15 @@ class LCI():
 
         for scenario in scenarios:
             for material in materials:
-                self.p[scenario+"_"+material] = self.p["p_"+scenario+"_"+material]*self.p[material]*reuse_factor
+                self.p[scenario+"_"+material] = self.p["p_"+scenario+"_"+material]*self.p[material]
                 if scenario == 'recycl':
                     eol[scenario] += UP_eol[material] * self.p[scenario + "_" + material]
                 else:
                     eol[scenario] += UP_eol[scenario] * self.p[scenario + "_" + material]
 
-        self.data["Recycling"] = (LCI_sort - eol['recycl']) / self.p["pkm_life"]
-        self.data["Incineration"] = eol["incin"] / self.p["pkm_life"]
-        self.data["Landfill"] = eol["ldf"] / self.p["pkm_life"]
+        self.data["Recycling"] = (LCI_sort - eol['recycl']) / self.p["ha_life"]
+        self.data["Incineration"] = eol["incin"] / self.p["ha_life"]
+        self.data["Landfill"] = eol["ldf"] / self.p["ha_life"]
 
     def run(self):
         self.dev()
@@ -248,11 +229,11 @@ class LCI():
         self.eol()
 
         MFG = self.data["Logistics"]+self.data["Sustaining"]+self.data["Factory"]+self.data["Materials"]
-        LCI_prot = (MFG*self.p["prototypes"] + MFG*self.p["ironbirds"]*0.3)/self.p["pkm_fleet"]
+        LCI_prot = (MFG*self.p["prototypes"] + MFG*self.p["ironbirds"]*0.3)/self.p["ha_fleet"]
         self.data["Prototypes"] = LCI_prot
 
         self.p["cert_flights"] = self.p["test_FH"] / self.p["FH"]
-        self.data["Certification"] = (self.data["LTO"]+self.data["CCD"])*self.p["cert_flights"]/self.p["pkm_fleet"]
+        self.data["Certification"] = (self.data["Landing"]+self.data["Takeoff"]+self.data["Cruise"])*self.p["cert_flights"]/self.p["ha_fleet"]
 
         return self.data
 

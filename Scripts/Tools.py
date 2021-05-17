@@ -123,22 +123,13 @@ def read_inputs(input_path, input_sheet):
 
     return inputs
 
-def pkm(aircraft_type, p):
-    """Calculates pkm (or tkm) for the aircraft."""
-    if aircraft_type == "cargo":
-        p["pkm_flight"] = p["payload"] * p["d_f"] * p["loadfactor"]
+def func_unit(aircraft_type, p):
+    """Calculates func_unit for the aircraft."""
 
-    elif aircraft_type == "pax":
-        p["npax"] = p["seat_max"] * p["p_seat"] * p["loadfactor"]
-        p["pkm_flight"] = p["npax"] * p["d_f"]
-
-    else:
-        raise Exception("Aircraft type must be 'pax' or 'cargo'")
-
-
-    p["pkm_year"] = p["pkm_flight"] * p["flights_year"]
-    p["pkm_life"] = p["pkm_year"] * p["lifetime"]
-    p["pkm_fleet"] = p["pkm_life"] * p["fleet"]
+    p["ha_flight"] = p["Productivity"] * p["FH"]
+    p["ha_year"] = p["ha_flight"] * p["flights_year"]
+    p["ha_life"] = p["ha_year"] * p["lifetime"]
+    p["ha_fleet"] = p["ha_life"] * p["fleet"]
     
     return p
 
