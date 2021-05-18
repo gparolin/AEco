@@ -1,3 +1,4 @@
+from ast import Pass
 import numpy as np
 import pandas as pd
 import warnings
@@ -63,7 +64,8 @@ class LCI():
         return self[phase].median('i').load()
 
     def office(self):
-        LCI_E_office = self.electricity(self.p["E_office"])  #per month
+
+        LCI_E_office = self.electricity(self.p["E_office"], "BR")  #per month
         LCI_E_office = LCI_E_office * self.p["devmonths"]  #per development
 
         LCI_water_office = self.UP["Water"] * self.p["water_office"] \
@@ -76,13 +78,14 @@ class LCI():
         self.data['Office'] = LCI_office
 
     def infrastructure(self):
-        LCI_construction = (self.UP["Facilities"]*self.p["new_factory"]/2.74e5) / self.p["ha_fleet"]
+        self.p["new_factory"] = ((self.p["new_factory_US"]/2.74e5)/self.p["ha_fleet_US"]) + ((self.p["new_factory_BR"]/2.74e5)/self.p["ha_fleet_BR"])
+        LCI_construction = self.UP["Facilities"] * self.p["new_factory"]
         self.data["Infrastructure"] = LCI_construction
     
     def capital(self):
         self.p["new_jigs"] = self.p["OEW"] * 500  # 50t of jigs per 100kg of product
         self.UP["Capital"] = self.UP["Steel"] + self.UP["Jigs"]  # material plus transformation
-        LCI_capital = (self.UP["Capital"]*self.p["new_jigs"] + self.UP["Machine"]*self.p["new_machine"])/self.p["ha_fleet"]
+        LCI_capital = (self.UP["Capital"]*self.p["new_jigs"]/self.p["ha_fleet"]) + self.UP["Machine"]*((self.p["new_machine_US"]/self.p["ha_fleet_US"])+(self.p["new_machine_BR"]/self.p["ha_fleet_BR"]))
         self.data["Capital"] = LCI_capital
 
     def dev(self):
@@ -111,9 +114,11 @@ class LCI():
         self.data["Materials"] = LCI_material
 
     def factory(self):
-        LCI_E_factory_alum = self.electricity(self.p["E_aluminum"])
-        LCI_E_factory_comp = self.electricity(self.p["E_composite"])
-        LCI_E_factory_assy = self.electricity(self.p["E_assy"])
+        self.p["takt"] = (self.p["fleet_US"]*self.p["takt_US"] + self.p["fleet_BR"]*self.p["takt_BR"])/ self.p["fleet"]
+
+        LCI_E_factory_alum = (self.electricity(self.p["E_aluminum"],"US")*self.p["fleet_US"] + self.electricity(self.p["E_aluminum"],"BR")*self.p["fleet_BR"])/self.p["fleet"]
+        LCI_E_factory_comp = (self.electricity(self.p["E_composite"],"US")*self.p["fleet_US"] + self.electricity(self.p["E_composite"],"BR")*self.p["fleet_BR"])/self.p["fleet"]
+        LCI_E_factory_assy = (self.electricity(self.p["E_assy"],"US")*self.p["fleet_US"] + self.electricity(self.p["E_assy"],"BR")*self.p["fleet_BR"])/self.p["fleet"]
         LCI_E_factory = (LCI_E_factory_alum+LCI_E_factory_comp+LCI_E_factory_assy) * self.p["takt"] / 30  # per aircraft
 
         LCI_water_factory = self.UP["Water"]*self.p["water_factory"] \
@@ -163,8 +168,10 @@ class LCI():
 
 
     def spray(self):
-        self.data["Pesticide"] = (self.p["pesticide_use"] / self.p["pesticide_eff"]) * self.UP["Pesticide"] #kg/ha
-
+        try:
+            self.data["Pesticide"] = (self.p["pesticide_use"] / self.p["pesticide_eff"]) * self.UP["Pesticide"] #kg/ha
+        except:
+            Pass
 
     def maintenance(self):
         LCI_maint = self.UP["Aluminium"]*self.p["maint_Al"] + self.UP["Steel"]*self.p["maint_steel"] \
@@ -188,7 +195,7 @@ class LCI():
     
         E_sort_constant = 0.4645 / 3.6  # kWh/kg of material, on average
         self.p["E_sort"] = E_sort_constant * self.p['OEW']
-        LCI_sort = self.electricity(self.p["E_sort"])
+        LCI_sort = (self.electricity(self.p["E_sort"],"BR")*self.p["fleet_BR"]+self.electricity(self.p["E_sort"],"US")*self.p["fleet_US"])/self.p["fleet"]
 
         materials = ['Al','steel','Ti','inconel','GFRP','CFRP']
         scenarios = ['ldf', 'incin','recycl']
@@ -227,15 +234,21 @@ class LCI():
 
         return self.data
 
-    def electricity(self, E):
+    def electricity(self, E, country):
         """Calculates the LCI of electricity consumption based on a gas-wind-hydropower electricity grid."""
         
-        E_wind = E * self.p['grid_wind']
-        E_gas = E * self.p['grid_gas']
-        E_hydro = E * self.p['grid_hydro']
+        if country == "US":
+            E_wind = E * self.p['grid_wind_US']
+            E_gas = E * self.p['grid_gas_US']
+            E_hydro = E * self.p['grid_hydro_US']
+        elif country == "BR":
+            E_wind = E * self.p['grid_wind_BR']
+            E_gas = E * self.p['grid_gas_BR']
+            E_hydro = E * self.p['grid_hydro_BR']
+    
         LCI_E = self.UP['Elec_wind']*E_wind \
                 + self.UP['Elec_gas']*E_gas + self.UP['Elec_hydro']*E_hydro
-        
+
         return LCI_E
 
 
