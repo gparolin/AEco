@@ -432,10 +432,10 @@ class LCIA():
         self.EP.to_netcdf(path, group='EP', mode='a',engine='h5netcdf')
         
         if LCI:
-            self.LCI.data.reset_index("Substances").to_netcdf(path, group='LCI', mode='a')
+            self.LCI.data.reset_index("Substances").to_netcdf(path, group='LCI', mode='a',engine='h5netcdf')
         
         if self.CTV != None:
-            self.CTV.to_netcdf(path, group='CTV', mode='a')
+            self.CTV.to_netcdf(path, group='CTV', mode='a',engine='h5netcdf')
         
         return print(f"LCIA saved at {path}")
     
