@@ -153,10 +153,13 @@ class LCI():
         self.sustaining()
 
     def flights(self):
-        self.p["fuel_cruise"] = self.p["ff_cruise"] * self.p["t_cruise"]  # kg
+        self.p["fuel_spraying"] = self.p["ff_spraying"] * self.p["t_spraying"]  # kg
         self.p["fuel_takeoff"] = self.p["ff_takeoff"] * self.p["t_takeoff"]  # kg
         self.p["fuel_landing"] = self.p["ff_landing"] * self.p["t_landing"]  # kg
-        self.p["fuel_total"] = self.p["fuel_cruise"]+self.p["fuel_takeoff"]+self.p["fuel_landing"]
+        self.p["fuel_ferry"] = self.p["ff_ferry"] * self.p["t_ferry"]  # kg
+        self.p["fuel_turn"] = self.p["ff_turn"] * self.p["t_turn"]  # kg
+
+        self.p["fuel_total"] = self.p["fuel_spraying"]+self.p["fuel_takeoff"]+self.p["fuel_landing"]+self.p["fuel_ferry"]+self.p["fuel_turn"]
         self.data["Flight"] = self.UP["Engine"] * self.p["fuel_total"]/ self.p["ha_flight"]
 
 
