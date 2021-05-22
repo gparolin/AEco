@@ -340,6 +340,12 @@ class LCIA():
     
     def __getitem__(self, item):
         return xr.concat((self.MP[item], self.EP[item]), dim='Pathway')
+
+    def get_cat(self, cat):
+        if cat in self.MP.Categories:
+            return self.MP.loc[{"Categories":cat}]
+        if cat in self.EP.AOP:
+            return self.EP.loc[{"AOP":cat}]
     
     @classmethod
     def build(cls, LCI, CF):
@@ -523,13 +529,14 @@ class LCIA():
             ax.axvline(data.mean(), 0, 1, color='darkgreen', ls= '--')
             sns.histplot(data, kde=False, color='forestgreen', ax=ax)
             ax.set_yticks([])
+            ax.set_ylabel('')
             ax.set_xlabel(cat, fontsize=12)
             ax.ticklabel_format(axis='x', style='sci', scilimits=(0,0), useMathText=True)
             ax.set_xticks([data.min(), data.mean(), data.max()])
             fig.add_subplot(ax)
         
         if save:
-            fig.savefig('.\\Outputs\\' + name + 'dist.pdf', bbox_inches='tight', papertype='A3')    
+            fig.savefig('.\\Outputs\\' + name + 'dist.pdf', bbox_inches='tight')    
         
         plt.show()
         
@@ -586,7 +593,7 @@ class LCIA():
         plt.legend(bbox_to_anchor=(1.01, 0), loc=3, borderaxespad=0.2, edgecolor='w', fontsize=11)
         
         if save:
-            fig.savefig('.\\Outputs\\' + name + 'bar.pdf', bbox_inches='tight', papertype='A3')
+            fig.savefig('.\\Outputs\\' + name + 'bar.pdf', bbox_inches='tight')
             
         plt.show()
         
@@ -610,7 +617,7 @@ class LCIA():
                 plt.axis('off')
 
                 if save:
-                    pdf.savefig(bbox_inches='tight', papertype='A4')
+                    pdf.savefig(bbox_inches='tight')
 
                 plt.show()
     
@@ -668,7 +675,7 @@ class LCIA():
         f.set_dpi(150)
 
         if save:
-            f.savefig('.\\Outputs\\' + name + '.pdf', bbox_inches='tight', papertype='A4')
+            f.savefig('.\\Outputs\\' + name + '.pdf', bbox_inches='tight')
 
         plt.show()
 
