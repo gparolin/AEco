@@ -323,7 +323,7 @@ def spearman_correlation(x, y, dim):
 class LCIA():
     """Represent LCIA results."""
 
-    def __init__(self, LCI=None, CF=None, CTV=None, MP=None, EP=None):
+    def __init__(self, phases=None, LCI=None, CF=None, CTV=None, MP=None, EP=None):
         """Initializes the LCIA object with a LCI and CF."""
         
         self.LCI = LCI
@@ -331,11 +331,13 @@ class LCIA():
         self.CTV = CTV
         self.MP = MP
         self.EP = EP
-        self.phases = {'Development': ['Office','Infrastructure','Capital','Prototypes','Certification'],
-                       'Manufacturing': ['Materials','Factory','Logistics','Sustaining'],
-                       'Operation': ['Flight','Pesticide','Maintenance','Fuel'],
-                       'End-of-Life': ['Recycling','Landfill','Incineration']
-                      }
+        if phases == None:
+            self.phases = {'Development': ['Office','Infrastructure','Capital','Prototypes','Certification'],
+                'Manufacturing': ['Materials','Factory','Logistics','Sustaining'],
+                'Operation': ['Flight','Pesticide','Maintenance','Fuel'],
+                'End-of-Life': ['Recycling','Landfill','Incineration']}
+        else:
+            self.phases = phases
         
     def __repr__(self):
         return f"LCIA results of the {self.MP.attrs['Name']}"
@@ -466,7 +468,7 @@ class LCIA():
         return print(f"LCIA saved at {path}")
     
     @classmethod
-    def load(cls, path, chunks={}, CTV=False, LCI=False):
+    def load(cls, path, chunks={}, phases=None, CTV=False, LCI=False, no_pest=False):
         """Loads NetCDF file from path.
         
         chunks: specify the chunks to pass the xr.open_dataset function.
@@ -487,7 +489,13 @@ class LCIA():
                 with xr.open_dataset(path, chunks=chunks, group='CTV') as ds:
                     ctv = ds
             
-            return cls(MP=mp, EP=ep, LCI=lci, CTV=ctv)
+            if no_pest:
+                mp = mp.drop_vars("Pesticide")
+                ep = ep.drop_vars("Pesticide")
+            else:
+                pass
+
+            return cls(phases=phases, MP=mp, EP=ep, LCI=lci, CTV=ctv)
         
     
     def dist(self, pathway='MP', save=False, palette='GnBu'):
