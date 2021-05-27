@@ -119,7 +119,7 @@ class LCI():
         LCI_E_factory_alum = (self.electricity(self.p["E_aluminum"],"US")*self.p["fleet_US"] + self.electricity(self.p["E_aluminum"],"BR")*self.p["fleet_BR"])/self.p["fleet"]
         LCI_E_factory_comp = (self.electricity(self.p["E_composite"],"US")*self.p["fleet_US"] + self.electricity(self.p["E_composite"],"BR")*self.p["fleet_BR"])/self.p["fleet"]
         LCI_E_factory_assy = (self.electricity(self.p["E_assy"],"US")*self.p["fleet_US"] + self.electricity(self.p["E_assy"],"BR")*self.p["fleet_BR"])/self.p["fleet"]
-        LCI_E_factory_only = self.electricity(self.p["E_factory"])
+        LCI_E_factory_only = self.electricity(self.p["E_factory"], "BR")
 
         LCI_E_factory = (LCI_E_factory_alum+LCI_E_factory_comp+LCI_E_factory_assy+LCI_E_factory_only) * self.p["takt"] / 30  # per aircraft
 
