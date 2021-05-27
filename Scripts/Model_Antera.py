@@ -164,8 +164,10 @@ class LCI():
     def flights(self):
         self.p["fuel_cruise"] = self.p["ff_cruise"] * self.p["t_cruise"]  # kg
         self.p["fuel_takeoff"] = self.p["ff_takeoff"] * self.p["t_takeoff"]  # kg
-        self.p["fuel_landing"] = self.p["ff_landing"] * self.p["t_landing"]  # kg
-        self.p["fuel_total"] = self.p["fuel_cruise"]+self.p["fuel_takeoff"]+self.p["fuel_landing"]
+        self.p["fuel_solo"] = self.p["ff_solo"] * self.p["t_solo"]  # kg
+        self.p["fuel_curva"] = self.p["ff_curva"] * self.p["t_curva"]  # kg
+        self.p["fuel_ferry"] = self.p["ff_ferry"] * self.p["t_ferry"]  # kg
+        self.p["fuel_total"] = self.p["fuel_cruise"]+self.p["fuel_takeoff"]+self.p["fuel_solo"]+self.p["fuel_ferry"]+self.p["fuel_curva"]
         self.data["Flight"] = self.UP["Engine"] * self.p["fuel_total"]/ self.p["ha_flight"]
 
 
