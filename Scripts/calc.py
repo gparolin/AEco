@@ -1,8 +1,8 @@
 import os
 os.chdir("C:/Users/giparoli/Documents/Projetos/AEco")
 
-input_path = './Data/Iris_inputs_v2.xlsx'
-input_sheet = 'Iris_AT'
+input_path = './Data/Iris_inputs_scenarios.xlsx'
+input_sheet = 'Iris_pestreduct'
 output_path = './Local/'+ input_sheet + '_outputs'
 database_path = './Data/database_Iris.xlsx'
 
