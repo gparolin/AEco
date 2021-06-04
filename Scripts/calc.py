@@ -1,27 +1,25 @@
 import os
-os.chdir("C:/Users/Parolin/Documents/AEco")
+os.chdir("C:/Users/giparoli/Documents/Projetos/AEco")
 
-aircraft_type = 'pax'  #pax or cargo
+input_path = './Data/Iris_inputs_v2.xlsx'
+input_sheet = 'Iris_AT'
+output_path = './Local/'+ input_sheet + '_outputs'
+database_path = './Data/database_Iris.xlsx'
 
-input_path = './Data/A320_inputs.xlsx'
-input_sheet = 'A320'
-output_path = './Outputs/'+ input_sheet + '_outputs'
-database_path = './Data/database_A320.xlsx'
+iterations = 50000
+chunks = 100  #'auto'
 
-iterations = 1000000
-chunks = 100  #'auto' or more than 500
-
-from Tools import *
-from Model import *
+from Tools_Iris import *
+from Model_Iris import *
 
 inputs = read_inputs(input_path, input_sheet)
 p = ParameterSet(inputs, iterations, chunks)
-p = pkm(aircraft_type, p)
+p = func_unit(p)
 
 UP_dataframe = read_unit_processes(database_path)
 UP = unit_process_dataset(UP_dataframe)
 
-inventory = LCI(name=input_sheet, type=aircraft_type, iterations=iterations, UP=UP, parameters=p)
+inventory = LCI(name=input_sheet, iterations=iterations, UP=UP, parameters=p)
 inventory.run()
 
 MP_data, EP_data = read_CF(database_path)
