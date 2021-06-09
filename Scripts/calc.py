@@ -1,16 +1,16 @@
 import os
 os.chdir("C:/Users/giparoli/Documents/Projetos/AEco")
 
-input_path = './Data/Iris_inputs_v3.xlsx'
-input_sheet = 'Iris_AT'
+input_path = './Data/Antera_inputs_v2.xlsx'
+input_sheet = 'Antera_original'
 output_path = './Outputs/'+ input_sheet + '_outputs'
-database_path = './Data/database_Iris.xlsx'
+database_path = './Data/database_Antera.xlsx'
 
 iterations = 20000
 chunks = 100  #'auto'
 
-from Tools_Iris import *
-from Model_Iris import *
+from Tools_Antera import *
+from Model_Antera import *
 
 inputs = read_inputs(input_path, input_sheet)
 p = ParameterSet(inputs, iterations, chunks)
