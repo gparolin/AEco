@@ -189,7 +189,7 @@ class LCI():
         try:
             pest_eff_use = (self.p["pesticide_use"] / self.p["pesticide_eff"]) #kg/ha
             LCI_pest_water = (self.p["dilution"] * pest_eff_use) * self.UP["Water"] #kg/ha
-            self.data["Pesticide"] = pest_eff_use * self.UP["Pesticide"] + LCI_pest_water
+            self.data["Pesticide"] = (pest_eff_use * self.UP["Pesticide"] + LCI_pest_water) * self.p["ha_year_spr"] / self.p["ha_year"]
         except:
             Pass
 
