@@ -180,7 +180,7 @@ class LCI():
         self.p["fuel_total_img"] = self.p["fuel_cruise_img"]+self.p["fuel_takeoff_img"]+self.p["fuel_solo_img"]+self.p["fuel_ferry_img"]+self.p["fuel_curva_img"]
         self.p["fuel_total_spr"] = self.p["fuel_cruise_spr"]+self.p["fuel_takeoff_spr"]+self.p["fuel_solo_spr"]+self.p["fuel_ferry_spr"]+self.p["fuel_curva_spr"]
 
-        self.p["fuel_total_ha"] = ((self.p["fuel_total_img"]/ self.p["ha_flight_img"]) + (self.p["fuel_total_spr"]/ self.p["ha_flight_spr"]))
+        self.p["fuel_total_ha"] = (self.p["fuel_total_img"] + self.p["fuel_total_spr"]) / (self.p["ha_flight_img"] + self.p["ha_flight_spr"])
 
         self.data["Flight"] = self.UP["Engine"] * self.p["fuel_total_ha"]
 
