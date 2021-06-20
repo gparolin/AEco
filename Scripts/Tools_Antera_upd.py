@@ -126,26 +126,27 @@ def read_inputs(input_path, input_sheet):
 def func_unit(p):
     """Calculates func_unit for the aircraft."""
     p["fleet"] = p["fleet_US"] + p["fleet_BR"]
-    p["ha_flight_img"] = p["productivity_img"] * p["FH_img"]
-    p["ha_flight_spr"] = p["productivity_spr"] * p["FH_spr"]
+    # p["ha_flight_img"] = p["productivity_img"] * p["FH_img"]
+    # p["ha_flight_spr"] = p["productivity_spr"] * p["FH_spr"]
 
-    p["flights_year"] = p["flights_year_img"] + p["flights_year_spr"]
+    # p["flights_year"] = p["flights_year_img"] + p["flights_year_spr"]
 
-    p["ha_year_img"] = p["ha_flight_img"] * p["flights_year_img"]
-    p["ha_year_spr"] = p["ha_flight_spr"] * p["flights_year_spr"]
-    p["ha_year"] = p["ha_year_img"] + p["ha_year_spr"]
+    # p["ha_year_img"] = p["ha_flight_img"] * p["flights_year_img"]
+    # p["ha_year_spr"] = p["ha_flight_spr"] * p["flights_year_spr"]
+    # p["ha_year"] = p["ha_year_img"] + p["ha_year_spr"]
 
-    p["ha_life_img"] = p["ha_year_img"] * p["lifetime"]
-    p["ha_life_spr"] = p["ha_year_spr"] * p["lifetime"]
-    p["ha_life"] = p["ha_life_img"] + p["ha_life_spr"]
+    # p["ha_life_img"] = p["ha_year_img"] * p["lifetime"]
+    # p["ha_life_spr"] = p["ha_year_spr"] * p["lifetime"]
+    # p["ha_life"] = p["ha_life_img"] + p["ha_life_spr"]
 
-    p["ha_fleet_img"] = p["ha_life_img"] * p["fleet"]
-    p["ha_fleet_spr"] = p["ha_life_spr"] * p["fleet"]
-    p["ha_fleet"] = p["ha_fleet_img"] + p["ha_fleet_spr"]
+    # p["ha_fleet_img"] = p["ha_life_img"] * p["fleet"]
+    # p["ha_fleet_spr"] = p["ha_life_spr"] * p["fleet"]
+    # p["ha_fleet"] = p["ha_fleet_img"] + p["ha_fleet_spr"]
 
-    p["ha_fleet_US"] = (p["ha_life_img"]+p["ha_life_spr"]) * p["fleet_US"]
-    p["ha_fleet_BR"] = (p["ha_life_img"]+p["ha_life_spr"]) * p["fleet_BR"]
+    # p["ha_fleet_US"] = (p["ha_life_img"]+p["ha_life_spr"]) * p["fleet_US"]
+    # p["ha_fleet_BR"] = (p["ha_life_img"]+p["ha_life_spr"]) * p["fleet_BR"]
     
+    p["years_fleet"] = p["lifetime"] * p["fleet"]
     return p
 
 def read_unit_processes(database_path):

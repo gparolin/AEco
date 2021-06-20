@@ -73,20 +73,22 @@ class LCI():
         LCI_water_office = LCI_water_office * self.p["devmonths"]  #per development
 
         LCI_office = (LCI_E_office + LCI_water_office)  #per development
-        LCI_office = LCI_office / self.p["ha_fleet"]  #per ha
+        # LCI_office = LCI_office / self.p["ha_fleet"]  #per ha
+        LCI_office = LCI_office / self.p["years_fleet"]  #per year
 
         self.data['Office'] = LCI_office
 
     def infrastructure(self):
-        self.p["new_factory"] = ((self.p["new_factory_US"]/2.74e5)/self.p["ha_fleet_US"]) + ((self.p["new_factory_BR"]/2.74e5)/self.p["ha_fleet_BR"])
+        # self.p["new_factory"] = ((self.p["new_factory_US"]/2.74e5)/self.p["ha_fleet_US"]) + ((self.p["new_factory_BR"]/2.74e5)/self.p["ha_fleet_BR"])
+        self.p["new_factory"] = (self.p["new_factory_US"]/2.74e5) + (self.p["new_factory_BR"]/2.74e5)
         LCI_construction = self.UP["Facilities"] * self.p["new_factory"]
-        self.data["Infrastructure"] = LCI_construction
+        self.data["Infrastructure"] = LCI_construction / self.p["years_fleet"]
     
     def capital(self):
         self.p["new_jigs"] = self.p["OEW"] * 500  # 50t of jigs per 100kg of product
         self.UP["Capital"] = self.UP["Steel"] + self.UP["Jigs"]  # material plus transformation
-        LCI_capital = (self.UP["Capital"]*self.p["new_jigs"]/self.p["ha_fleet"]) + self.UP["Machine"]*((self.p["new_machine_US"]/self.p["ha_fleet_US"])+(self.p["new_machine_BR"]/self.p["ha_fleet_BR"]))
-        self.data["Capital"] = LCI_capital
+        LCI_capital = (self.UP["Capital"]*self.p["new_jigs"]) + self.UP["Machine"]*(self.p["new_machine_US"]+self.p["new_machine_BR"])
+        self.data["Capital"] = LCI_capital / self.p["years_fleet"]
 
     def dev(self):
         self.office()
@@ -110,7 +112,7 @@ class LCI():
         LCI_CFRP = self.UP["CFRP"] * self.p["CFRP"]
 
         #LCI Material Extraction and Transformation
-        LCI_material = (LCI_Al + LCI_steel + LCI_Ti + LCI_inconel + LCI_GFRP + LCI_CFRP) / self.p["ha_life"]
+        LCI_material = (LCI_Al + LCI_steel + LCI_Ti + LCI_inconel + LCI_GFRP + LCI_CFRP) / self.p["lifetime"]
         self.data["Materials"] = LCI_material
 
     def factory(self):
@@ -138,7 +140,7 @@ class LCI():
         LCI_facilities_maint = self.UP["Facilities"] * self.p["facilities_maint"] * 0.02  # per year
         LCI_facilities_maint = LCI_facilities_maint * self.p["takt"] / 365  # per aircraft
 
-        LCI_factory = (LCI_E_factory + LCI_water_factory + LCI_lube + LCI_matrix + LCI_facilities_maint)/self.p["ha_life"]
+        LCI_factory = (LCI_E_factory + LCI_water_factory + LCI_lube + LCI_matrix + LCI_facilities_maint)/self.p["lifetime"]
         self.data["Factory"] = LCI_factory
 
     def logistics(self):
@@ -147,12 +149,12 @@ class LCI():
         air = self.p["d_air"] * self.p["m_air"] #tonne * km
 
         LCI_logistics = (self.UP["Lorry"]*lorry + self.UP["Sea"]*sea \
-                + self.UP["Air"]*air) / self.p["ha_life"]
+                + self.UP["Air"]*air) / self.p["lifetime"]
         self.data['Logistics'] = LCI_logistics
     
     def sustaining(self):
         LCI_sustaining = self.data["Office"] * 0.01 / 30 #per day
-        LCI_sustaining = (LCI_sustaining * self.p["takt"])/self.p["ha_life"]
+        LCI_sustaining = (LCI_sustaining * self.p["takt"])/self.p["lifetime"]
         self.data["Sustaining"] = LCI_sustaining
         
     def mfg(self):
@@ -180,16 +182,17 @@ class LCI():
         self.p["fuel_total_img"] = self.p["fuel_cruise_img"]+self.p["fuel_takeoff_img"]+self.p["fuel_solo_img"]+self.p["fuel_ferry_img"]+self.p["fuel_curva_img"]
         self.p["fuel_total_spr"] = self.p["fuel_cruise_spr"]+self.p["fuel_takeoff_spr"]+self.p["fuel_solo_spr"]+self.p["fuel_ferry_spr"]+self.p["fuel_curva_spr"]
 
-        self.p["fuel_total_ha"] = (self.p["fuel_total_img"] + self.p["fuel_total_spr"]) / (self.p["ha_flight_img"] + self.p["ha_flight_spr"])
+        self.p["fuel_total"] = (self.p["fuel_total_img"]*self.p["flights_year_img"]) + (self.p["fuel_total_spr"]*self.p["flights_year_spr"])
 
-        self.data["Flight"] = self.UP["Engine"] * self.p["fuel_total_ha"]
+        self.data["Flight"] = self.UP["Engine"] * self.p["fuel_total"]
 
 
     def spray(self):
         try:
             pest_eff_use = (self.p["pesticide_use"] / self.p["pesticide_eff"]) #kg/ha
             LCI_pest_water = (self.p["dilution"] * pest_eff_use) * self.UP["Water"] #kg/ha
-            self.data["Pesticide"] = (pest_eff_use * self.UP["Pesticide"] + LCI_pest_water) * self.p["ha_year_spr"] / self.p["ha_year"]
+            ha_cycle = self.p["productivity_spr"] * self.p["FH_spr"] #ha/FC
+            self.data["Pesticide"] = (pest_eff_use * self.UP["Pesticide"] + LCI_pest_water) * ha_cycle * self.p["flights_year_spr"]
         except:
             Pass
 
@@ -197,12 +200,12 @@ class LCI():
         LCI_maint = self.UP["Aluminium"]*self.p["maint_Al"] + self.UP["Steel"]*self.p["maint_steel"] \
             + self.UP["Polymer"]*self.p["maint_pol"] + self.UP["Battery"]*self.p['maint_battery'] #por ano
 
-        LCI_maint = LCI_maint / self.p["ha_year"]
+        # LCI_maint = LCI_maint / self.p["ha_year"]
         self.data['Maintenance'] = LCI_maint
 
     def fuel(self):
             
-        LCI_fuel = self.UP['Kerosene'] * self.p["fuel_total_ha"]
+        LCI_fuel = self.UP['Kerosene'] * self.p["fuel_total"]
         self.data["Fuel"] = LCI_fuel
 
     def ope(self):
@@ -235,9 +238,9 @@ class LCI():
                 else:
                     eol[scenario] += UP_eol[scenario] * self.p[scenario + "_" + material]
 
-        self.data["Recycling"] = (LCI_sort - eol['recycl']) / self.p["ha_life"]
-        self.data["Incineration"] = eol["incin"] / self.p["ha_life"]
-        self.data["Landfill"] = eol["ldf"] / self.p["ha_life"]
+        self.data["Recycling"] = (LCI_sort - eol['recycl']) / self.p["lifetime"]
+        self.data["Incineration"] = eol["incin"] / self.p["lifetime"]
+        self.data["Landfill"] = eol["ldf"] / self.p["lifetime"]
 
     def run(self):
         self.dev()
@@ -246,12 +249,12 @@ class LCI():
         self.eol()
 
         MFG = self.data["Logistics"]+self.data["Sustaining"]+self.data["Factory"]+self.data["Materials"]
-        LCI_prot = (MFG*self.p["prototypes"] + MFG*self.p["ironbirds"]*0.3)/self.p["ha_fleet"]
+        LCI_prot = (MFG*self.p["prototypes"] + MFG*self.p["ironbirds"]*0.3)/self.p["years_fleet"]
         self.data["Prototypes"] = LCI_prot
 
-        self.p["cert_ha"] = self.p["test_FH"] * ((self.p["productivity_img"] + self.p["productivity_spr"])/2)
-        self.data["Certification"] = self.data["Flight"] * self.p["cert_ha"]/self.p["ha_fleet"]
-
+        # self.p["cert_ha"] = self.p["test_FH"] * ((self.p["productivity_img"] + self.p["productivity_spr"])/2)
+        # self.data["Certification"] = self.data["Flight"] * self.p["cert_ha"]/self.p["years_fleet"]
+        self.data["Certification"] = self.p["test_FH"] * self.data["Flight"] / self.p["years_fleet"]
         return self.data
 
     def electricity(self, E, country):
