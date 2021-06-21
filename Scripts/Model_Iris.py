@@ -177,9 +177,11 @@ class LCI():
         self.data['Maintenance'] = LCI_maint
 
     def fuel(self):
-            
-        LCI_fuel = self.UP['Kerosene']*self.p["fuel_total"] / self.p["ha_flight"]
-        self.data["Fuel"] = LCI_fuel
+        # self.UP["Fuel_blend"] = self.UP['Kerosene']*(1-self.p["biofuel"]) + self.UP["Biodiesel"]*self.p["biofuel"]
+        LCI_fossil = self.UP['Kerosene'] * self.p["fuel_total"] * (1-self.p["biofuel"])
+        LCI_bio = self.UP["Biodiesel"] * self.p["fuel_total"] * self.p["biofuel"]
+
+        self.data["Fuel"] = (LCI_fossil + LCI_bio) / self.p["ha_flight"]
 
     def ope(self):
         self.flights()
