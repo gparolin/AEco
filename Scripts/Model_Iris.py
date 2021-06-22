@@ -160,7 +160,7 @@ class LCI():
         self.p["fuel_turn"] = self.p["ff_turn"] * self.p["t_turn"]  # kg
 
         self.p["fuel_total"] = self.p["fuel_spraying"]+self.p["fuel_takeoff"]+self.p["fuel_landing"]+self.p["fuel_ferry"]+self.p["fuel_turn"]
-        self.data["Flight"] = self.UP["Engine"] * self.p["fuel_total"]/ self.p["ha_flight"]
+        self.data["Flight"] = self.UP["Engine"] * self.p["fuel_total"] / self.p["ha_flight"]
 
 
     def spray(self):
@@ -177,11 +177,11 @@ class LCI():
         self.data['Maintenance'] = LCI_maint
 
     def fuel(self):
-        # self.UP["Fuel_blend"] = self.UP['Kerosene']*(1-self.p["biofuel"]) + self.UP["Biodiesel"]*self.p["biofuel"]
         LCI_fossil = self.UP['Kerosene'] * self.p["fuel_total"] * (1-self.p["biofuel"])
         LCI_bio = self.UP["Biodiesel"] * self.p["fuel_total"] * self.p["biofuel"]
 
         self.data["Fuel"] = (LCI_fossil + LCI_bio) / self.p["ha_flight"]
+        # self.data["Fuel"] = self.UP['Kerosene'] * self.p["fuel_total"] / self.p["ha_flight"]
 
     def ope(self):
         self.flights()
