@@ -212,7 +212,7 @@ class LCI():
 
     def eol(self):
         try:
-            reuse_factor = (2 - p['reuse'])
+            reuse_factor = (2 - self.p['reuse'])
         except:
             reuse_factor = 1
     
