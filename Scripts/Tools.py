@@ -349,6 +349,12 @@ class LCIA():
     
     def __getitem__(self, item):
         return xr.concat((self.MP[item], self.EP[item]), dim='Pathway')
+
+    def get_cat(self, cat):
+        if cat in self.MP.Categories:
+            return self.MP.loc[{"Categories":cat}]
+        if cat in self.EP.AOP:
+            return self.EP.loc[{"AOP":cat}]
     
     @classmethod
     def build(cls, LCI, CF):
