@@ -123,7 +123,7 @@ def read_inputs(input_path, input_sheet):
 
     return inputs
 
-def pkm(aircraft_type, p):
+def func_unit(aircraft_type, p):
     """Calculates pkm (or tkm) for the aircraft."""
     if aircraft_type == "cargo":
         p["pkm_flight"] = p["payload"] * p["d_f"] * p["loadfactor"]
@@ -439,10 +439,10 @@ class LCIA():
         self.EP.to_netcdf(path, group='EP', mode='a',engine='h5netcdf')
         
         if LCI:
-            self.LCI.data.reset_index("Substances").to_netcdf(path, group='LCI', mode='a')
+            self.LCI.data.reset_index("Substances").to_netcdf(path, group='LCI', mode='a', engine='h5netcdf')
         
         if self.CTV != None:
-            self.CTV.to_netcdf(path, group='CTV', mode='a')
+            self.CTV.to_netcdf(path, group='CTV', mode='a', engine='h5netcdf')
         
         return print(f"LCIA saved at {path}")
     
@@ -538,7 +538,7 @@ class LCIA():
             fig.add_subplot(ax)
         
         if save:
-            fig.savefig('.\\Outputs\\' + name + 'dist.pdf', bbox_inches='tight', papertype='A3')    
+            fig.savefig('.\\Outputs\\' + name + 'dist.pdf', bbox_inches='tight')    
         
         plt.show()
         
@@ -595,7 +595,7 @@ class LCIA():
         plt.legend(bbox_to_anchor=(1.01, 0), loc=3, borderaxespad=0.2, edgecolor='w', fontsize=11)
         
         if save:
-            fig.savefig('.\\Outputs\\' + name + 'bar.pdf', bbox_inches='tight', papertype='A3')
+            fig.savefig('.\\Outputs\\' + name + 'bar.pdf', bbox_inches='tight')
             
         plt.show()
         
@@ -619,7 +619,7 @@ class LCIA():
                 plt.axis('off')
 
                 if save:
-                    pdf.savefig(bbox_inches='tight', papertype='A4')
+                    pdf.savefig(bbox_inches='tight')
 
                 plt.show()
     
